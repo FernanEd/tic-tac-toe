@@ -167,6 +167,7 @@ main section{
 
 #reset-btn{
     position: absolute;
+    left: 10%;
     bottom: 10%;
 
     border: 1px solid var(--secondary);
@@ -179,7 +180,7 @@ main section{
     transition: color 0.4s ease;
 }
 
-#reset-btn:hover{
+#reset-btn:hover, #reset-btn:active{
     color: var(--primary);
     box-shadow: 0px 2px 8px 1px rgba(0,0,0,0.4);
 }
@@ -268,6 +269,7 @@ main section{
     main{
         flex-direction: column;
         flex-flow: column-reverse;
+        box-sizing: border-box;
     }
 
     .player-icon{
@@ -296,7 +298,8 @@ main section{
 
     #reset-btn{
         position: absolute;
-        right: 5%;
+        top: 5%;
+        left: 5%;
         bottom: initial;
     }
 
@@ -308,6 +311,10 @@ main section{
     
      #credits{
         display: none;
+    }
+
+    #p2-side{
+        transform: rotate(180deg);
     }
 
 }

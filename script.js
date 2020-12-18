@@ -11,6 +11,7 @@ const GAME_BOARD = (function(){
     let symbol = "x";
     let isPlaying = false;
     let currentPlayer = undefined;
+    let maximumFlags = 1; //How many flags to win
 
     const SQUARES = document.querySelectorAll(".board-square");
 
@@ -33,13 +34,13 @@ const GAME_BOARD = (function(){
                         //Win
                         isPlaying = false;
                         currentPlayer.addFlag();
-                        setTimeout(restart, 1800);
+                        restart();
                     }
                     else if(boardArr.filter(elem => elem).length === 9)
                     {
                         //Draw
                         isPlaying = false;
-                        setTimeout(restart, 1000);
+                        restart();
                     }
                     else{
                         changeTurn();
@@ -50,15 +51,42 @@ const GAME_BOARD = (function(){
     }
 
     const endGame = () => {
+        let p1win = ["P","1","","w","o","n","","",""];
+        let p2win = ["","P","2","w","o","n","","",""];
+        
+        let winnerArr = player1.getFlags() === maximumFlags? p1win: p2win;
 
+        const squaresArr = Array.from(SQUARES);
+        
+        squaresArr.forEach(square => {
+            let index = squaresArr.indexOf(square);
+            symbol = winnerArr[index];
+            fillSquare(index);
+        })
+
+        //Reset
+        let resetBtn = document.querySelector("#reset-btn");
+        resetBtn.style.cssText = "display: show; animation:popup 0.3s ease forwards;";
+        resetBtn.addEventListener("click", e => {
+            resetGame();
+            resetBtn.style.cssText = "animation: fade-out 0.3s ease forwards";
+            setTimeout(() => resetBtn.style.cssText = "display:none;", 400);
+        })
     }
 
     const restart = () => {
-        clearBoard();
-        isPlaying = true;
-
-        //Restart game on the next player turn
-        changeTurn();
+        setTimeout(clearBoard, 1800);
+        if(player1.getFlags() < maximumFlags && player2.getFlags() < maximumFlags)
+        {
+            //Animation takes 0.3s = 300ms add atleast +400 more
+            setTimeout(() => isPlaying = true, 2200);
+            //Restart game on the next player turn
+            changeTurn();
+        }
+        else
+        {
+            setTimeout(endGame, 2200);
+        }
     }
 
     const changeTurn = () => {
@@ -74,7 +102,6 @@ const GAME_BOARD = (function(){
         let spanText = document.createElement("span");
         spanText.classList.add("text");
         spanText.innerText = symbol;
-
         SQUARES[index].appendChild(spanText);
     }
 
@@ -96,12 +123,33 @@ const GAME_BOARD = (function(){
         boardArr = [,,,,,,,,];
         
         SQUARES.forEach(square => {
-            square.innerHTML = "";
+            let span = square.firstElementChild;
+            if(span !== null)
+            {
+                span.style.cssText = "animation: fade-out 0.3s ease forwards;";
+                span.addEventListener("animationend", () => {
+                    square.innerHTML = "";
+                })
+            }
+            else
+            {
+                square.innerHTML = "";
+            }
         })
     };
 
-    const reset = () => {
+    const resetGame = () => {
+        player1.resetFlags();
+        player2.resetFlags();
+        currentPlayer.removeGlow();
+        clearBoard();
 
+        setTimeout(() => {
+            isPlaying = true;
+            currentPlayer = player1;
+            symbol = "x";
+            currentPlayer.makeGlow();
+        }, 400);
     }
 
     return { startGame }
@@ -130,6 +178,9 @@ const factoryPlayer = (name, sideID, type) =>{
 
     const PLAYER_FLAGS = playerSide.querySelector(".player-wins");
 
+    //Flags is the variable to keep track of wins
+    let flags = 0;
+
     const setName = newName => {
         playerName = newName || name;
     };
@@ -138,8 +189,16 @@ const factoryPlayer = (name, sideID, type) =>{
 
     const addFlag = () => {
         PLAYER_FLAGS.innerHTML += FLAG_ICON;
+        flags ++;
     }
 
+    const getFlags = () => flags;
+
+    const resetFlags = () => {
+        flags = 0;
+        PLAYER_FLAGS.innerHTML = "";
+    }
+ 
     const makeGlow = () =>{
         ICON.style.cssText = "animation: glow 0.3s ease forwards;";
     }
@@ -148,7 +207,7 @@ const factoryPlayer = (name, sideID, type) =>{
         ICON.style.cssText = "animation: none;";
     }
 
-    return {setName, getName, makeGlow, removeGlow, addFlag}
+    return {setName, getName, makeGlow, removeGlow, addFlag, getFlags, resetFlags}
 }
 
 
@@ -177,6 +236,7 @@ let player2 = undefined;
 
     playerBtn.addEventListener("click", () => {
         player2 = factoryPlayer("Player 2", "p2-side", "player");
+
         play.style.cssText = "animation:fade-out 0.4s ease;";
         play.addEventListener("animationend", () => {
             play.remove();
@@ -186,6 +246,7 @@ let player2 = undefined;
 
     cpuBtn.addEventListener("click", () => {
         player2 = factoryPlayer("Player 2", "p2-side", "cpu");
+
         play.style.cssText = "animation:fade-out 0.4s ease;";
         play.addEventListener("animationend", () => {
             play.remove();

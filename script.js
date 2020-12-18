@@ -57,7 +57,7 @@ const GAME_BOARD = (function(){
         clearBoard();
         isPlaying = true;
 
-        //Change turn
+        //Restart game on the next player turn
         changeTurn();
     }
 

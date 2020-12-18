@@ -2,6 +2,10 @@
 
 //Gameboard
 
+const CPU_PLAYER = (function(){
+
+})();
+
 const GAME_BOARD = (function(){
     let boardArr = [,,,,,,,,];
     let symbol = "x";
@@ -18,25 +22,28 @@ const GAME_BOARD = (function(){
         const squaresArr = Array.from(SQUARES);
         squaresArr.forEach(square => {
             square.addEventListener("click", e => {
-                if (isPlaying){
+                let index = squaresArr.indexOf(square);
 
-                    let index = squaresArr.indexOf(square);
+                if (isPlaying && boardArr[index] === undefined)
+                {
                     fillSquare(index);
                     
                     if(checkWinCondition())
                     {
+                        //Win
                         isPlaying = false;
                         currentPlayer.addFlag();
                         setTimeout(restart, 1800);
                     }
-                    else{
-                        symbol = symbol === "x"? "o": "x"; 
-                        currentPlayer.removeGlow();
-                        currentPlayer = currentPlayer == player1? player2: player1;
-                        currentPlayer.makeGlow();
+                    else if(boardArr.filter(elem => elem).length === 9)
+                    {
+                        //Draw
+                        isPlaying = false;
+                        setTimeout(restart, 1000);
                     }
-
-                    console.log(boardArr);
+                    else{
+                        changeTurn();
+                    }
                 }
             })
         })
@@ -47,10 +54,14 @@ const GAME_BOARD = (function(){
     }
 
     const restart = () => {
-
         clearBoard();
         isPlaying = true;
 
+        //Change turn
+        changeTurn();
+    }
+
+    const changeTurn = () => {
         symbol = symbol === "x"? "o": "x"; 
         currentPlayer.removeGlow();
         currentPlayer = currentPlayer == player1? player2: player1;
@@ -58,16 +69,13 @@ const GAME_BOARD = (function(){
     }
 
     const fillSquare = index => {
-        if(boardArr[index] === undefined)
-        {
-            boardArr[index] = symbol;
+        boardArr[index] = symbol;
 
-            let spanText = document.createElement("span");
-            spanText.classList.add("text");
-            spanText.innerText = symbol;
+        let spanText = document.createElement("span");
+        spanText.classList.add("text");
+        spanText.innerText = symbol;
 
-            SQUARES[index].appendChild(spanText);
-        }
+        SQUARES[index].appendChild(spanText);
     }
 
     const checkWinCondition = () => {

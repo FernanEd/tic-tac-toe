@@ -4,14 +4,28 @@
 
 const CPU_PLAYER = (function(){
 
+    const getRobotMoveIndex = gameArr => {
+        let possibleMoves = []; 
+        for(let i = 0; i < gameArr.length; i++)
+        {
+            if(gameArr[i] === "")
+            {
+                possibleMoves.push(i);
+            }
+        }
+        let randomIndex = Math.floor(Math.random() * possibleMoves.length);
+        return possibleMoves[randomIndex];
+    }
+
+    return { getRobotMoveIndex }
 })();
 
 const GAME_BOARD = (function(){
-    let boardArr = [,,,,,,,,];
+    let boardArr = ["","","","","","","","",""];
     let symbol = "x";
     let isPlaying = false;
     let currentPlayer = undefined;
-    let maximumFlags = 1; //How many flags to win
+    let maximumFlags = 5; //How many flags to win
 
     const SQUARES = document.querySelectorAll(".board-square");
 
@@ -25,7 +39,7 @@ const GAME_BOARD = (function(){
             square.addEventListener("click", e => {
                 let index = squaresArr.indexOf(square);
 
-                if (isPlaying && boardArr[index] === undefined)
+                if (isPlaying && boardArr[index] === "")
                 {
                     fillSquare(index);
                     
@@ -44,6 +58,30 @@ const GAME_BOARD = (function(){
                     }
                     else{
                         changeTurn();
+                        //When playing vs bot
+                        if(player2.isCPU())
+                        {
+                            isPlaying = false;
+                            setTimeout(() => {
+                                fillSquare(CPU_PLAYER.getRobotMoveIndex(boardArr));
+                                //Check for Draw
+                                if(checkWinCondition())
+                                {
+                                    //Win
+                                    currentPlayer.addFlag();
+                                    restart();
+                                }
+                                else if(boardArr.filter(elem => elem).length === 9)
+                                {
+                                    restart();
+                                }
+                                else
+                                {
+                                    isPlaying = true;
+                                    changeTurn();
+                                }
+                            }, 800);
+                        }
                     }
                 }
             })
@@ -51,6 +89,7 @@ const GAME_BOARD = (function(){
     }
 
     const endGame = () => {
+        //Win msg
         let p1win = ["P","1","","w","o","n","","",""];
         let p2win = ["","P","2","w","o","n","","",""];
         
@@ -78,10 +117,21 @@ const GAME_BOARD = (function(){
         setTimeout(clearBoard, 1800);
         if(player1.getFlags() < maximumFlags && player2.getFlags() < maximumFlags)
         {
-            //Animation takes 0.3s = 300ms add atleast +400 more
-            setTimeout(() => isPlaying = true, 2200);
-            //Restart game on the next player turn
             changeTurn();
+            if(currentPlayer === player2 && player2.isCPU()) //Start with cpu move
+            {
+                setTimeout(() => {
+                    fillSquare(CPU_PLAYER.getRobotMoveIndex(boardArr));
+                    isPlaying = true;
+                    changeTurn();
+                }, 2600);
+            }
+            else
+            {
+                //Animation takes 0.3s = 300ms add atleast +400 more
+                setTimeout(() => isPlaying = true, 2200);
+                //Restart game on the next player turn
+            }
         }
         else
         {
@@ -120,7 +170,7 @@ const GAME_BOARD = (function(){
     };
 
     const clearBoard = () => {
-        boardArr = [,,,,,,,,];
+        boardArr = ["","","","","","","","",""];
         
         SQUARES.forEach(square => {
             let span = square.firstElementChild;
@@ -198,6 +248,8 @@ const factoryPlayer = (name, sideID, type) =>{
         flags = 0;
         PLAYER_FLAGS.innerHTML = "";
     }
+
+    const isCPU = () => type === "cpu";
  
     const makeGlow = () =>{
         ICON.style.cssText = "animation: glow 0.3s ease forwards;";
@@ -207,7 +259,7 @@ const factoryPlayer = (name, sideID, type) =>{
         ICON.style.cssText = "animation: none;";
     }
 
-    return {setName, getName, makeGlow, removeGlow, addFlag, getFlags, resetFlags}
+    return {setName, getName, makeGlow, removeGlow, addFlag, getFlags, resetFlags, isCPU}
 }
 
 

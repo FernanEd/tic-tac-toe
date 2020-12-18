@@ -25,7 +25,7 @@ const GAME_BOARD = (function(){
     let symbol = "x";
     let isPlaying = false;
     let currentPlayer = undefined;
-    let maximumFlags = 5; //How many flags to win
+    let maximumFlags = 1; //How many flags to win
 
     const SQUARES = document.querySelectorAll(".board-square");
 

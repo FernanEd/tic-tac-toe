@@ -306,13 +306,6 @@ main section{
         width: 75%;
     }
 
-    #reset-btn{
-        position: absolute;
-        top: 5%;
-        left: 5%;
-        bottom: initial;
-    }
-
     .board-square .text{
         padding-bottom: 2vh;
         font-family: 'Source Code Pro', monospace;
